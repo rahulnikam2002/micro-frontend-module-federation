@@ -4,25 +4,43 @@ const path = require("path");
 const deps = require("./package.json").dependencies;
 
 module.exports = {
-  entry: "./src/index.ts",
+  entry: "./src/index.ts", // your main entry
   mode: "development",
   devServer: {
     port: 3001,
     open: true,
+    hot: true,
+    historyApiFallback: true,
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"],
+    extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
   module: {
     rules: [
+      // TypeScript and JavaScript
       {
-        test: /\.(js|jsx|tsx|ts)$/,
-        loader: "ts-loader",
+        test: /\.(ts|tsx|js|jsx)$/,
+        use: "ts-loader",
         exclude: /node_modules/,
       },
+      // CSS Modules
       {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        test: /\.module\.css$/i,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              modules: true,
+            },
+          },
+        ],
+      },
+      // Global CSS
+      {
+        test: /\.css$/i,
+        exclude: /\.module\.css$/i,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },
@@ -31,21 +49,22 @@ module.exports = {
       name: "remote",
       filename: "remoteEntry.js",
       exposes: {
-        // expose each component
         "./Header": "./src/components/Header",
       },
       shared: {
         ...deps,
         react: { singleton: true, eager: true, requiredVersion: deps.react },
-        "react-dom": {
-          singleton: true,
-          eager: true,
-          requiredVersion: deps["react-dom"],
-        },
+        "react-dom": { singleton: true, eager: true, requiredVersion: deps["react-dom"] },
       },
     }),
     new HtmlWebpackPlugin({
       template: "./public/index.html",
     }),
   ],
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    publicPath: "auto", // required for module federation
+    clean: true, // optional: clean old builds
+  },
+  devtool: "source-map", // optional: easier debugging
 };
