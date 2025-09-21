@@ -13,7 +13,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cache-key: ${{ steps.cache.outputs.cache-hit }}
+      packages-json: ${{ steps.list-packages.outputs.packages-json }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,23 +23,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Cache node_modules
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            **/node_modules
-            **/.yarn/cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
       - name: List all packages
         id: list-packages
         run: |
-          PACKAGES=$(ls -d packages/*/ | xargs -n1 basename)
-          echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+          PACKAGES=$(ls -d packages/*/ | xargs -n1 basename | jq -R -s -c 'split("\n")[:-1]')
+          echo "packages-json=$PACKAGES" >> $GITHUB_OUTPUT
 
   # ----------------------------------------
   # 2️⃣ Run tests and upload coverage dynamically
@@ -49,7 +40,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        pkg: ${{ env.PACKAGES }}
+        pkg: ${{ fromJSON(needs.setup.outputs.packages-json) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
