@@ -1,7 +1,7 @@
 export const Header = () => {
   return (
     <div>
-      <h1>Welcome to the Remote Component by Rahul Nikam</h1>
+      <h1>Welcome to the Remote Component by Rahul Nikam and Saurav Nikam</h1>
     </div>
   );
 

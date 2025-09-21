@@ -18,7 +18,8 @@
     "start": "webpack serve",
     "build": "webpack --mode production",
     "serve": "serve dist -p 3000",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "jest"
   },
   "dependencies": {
     "css-loader": "^7.1.2",
