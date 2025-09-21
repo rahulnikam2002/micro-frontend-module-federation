@@ -12,8 +12,6 @@ jobs:
   # ----------------------------------------
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      cache-key: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,7 +22,6 @@ jobs:
           node-version: 20
 
       - name: Cache node_modules
-        id: cache
         uses: actions/cache@v3
         with:
           path: |
@@ -36,16 +33,16 @@ jobs:
         run: yarn install --frozen-lockfile
 
   # ----------------------------------------
-  # 2️⃣ Run tests for container
+  # 2️⃣ Run tests for all packages dynamically
   # ----------------------------------------
-  test-container:
+  test:
     runs-on: ubuntu-latest
     needs: setup
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -53,48 +50,42 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run container tests
-        run: yarn workspace container test --coverage
+      - name: Find all packages
+        id: packages
+        run: |
+          echo "PACKAGES<<EOF" >> $GITHUB_OUTPUT
+          for dir in packages/*; do
+            if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
+              echo "${dir}" >> $GITHUB_OUTPUT
+            fi
+          done
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Upload container coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: container-coverage
-          path: packages/container/coverage
+      - name: Run tests for all packages
+        run: |
+          for pkg in packages/*; do
+            if [ -f "$pkg/package.json" ]; then
+              echo "Running tests for $pkg"
+              yarn workspace $(basename $pkg) test --coverage || exit 1
+            fi
+          done
 
-  # ----------------------------------------
-  # 3️⃣ Run tests for remote
-  # ----------------------------------------
-  test-remote:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Run remote tests
-        run: yarn workspace remote test --coverage
-
-      - name: Upload remote coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: remote-coverage
-          path: packages/remote/coverage
+      - name: Upload all coverage
+        run: |
+          for pkg in packages/*; do
+            if [ -d "$pkg/coverage" ]; then
+              name=$(basename $pkg)-coverage
+              echo "Uploading coverage artifact: $name"
+              gh actions upload-artifact --name $name --path $pkg/coverage
+            fi
+          done
 
   # ----------------------------------------
-  # 4️⃣ SonarCloud Analysis
+  # 3️⃣ SonarCloud Analysis (dynamic coverage)
   # ----------------------------------------
   sonarcloud:
     runs-on: ubuntu-latest
-    needs: [test-container, test-remote]
+    needs: test
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -106,28 +97,23 @@ jobs:
         with:
           node-version: 20
 
-      - name: Download container coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: container-coverage
-          path: packages/container/coverage
-
-      - name: Download remote coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: remote-coverage
-          path: packages/remote/coverage
+      - name: Download all coverage artifacts
+        run: |
+          for pkg in packages/*; do
+            artifact_name=$(basename $pkg)-coverage
+            if gh actions download-artifact --name $artifact_name --path $pkg/coverage; then
+              echo "Downloaded $artifact_name"
+            fi
+          done
 
       - name: Run SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         with:
-          organization: YOUR_ORG_KEY
-          token: ${{ secrets.SONAR_TOKEN }}
-          projectKey: rahulnikam2002_micro-frontend-module-federation
-          projectName: micro-frontend-module-federation
-          sources: packages/container/src,packages/remote/src
-          tests: packages/container/src/__tests__,packages/remote/src/__tests__
-          coverage: packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info
-          pullRequestKey: ${{ github.event.pull_request.number || '' }}
-          pullRequestBranch: ${{ github.head_ref || '' }}
-          pullRequestBase: ${{ github.base_ref || '' }}
+          entryPoint: .
+          args: >
+            -Dsonar.organization=rahulnikam2002
+            -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
+            -Dsonar.projectName=micro-frontend-module-federation
+            -Dsonar.sources=packages/*/src
+            -Dsonar.tests=packages/*/src/__tests__
+            -Dsonar.javascript.lcov.reportPaths=packages/*/coverage/lcov.info
