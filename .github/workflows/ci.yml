@@ -12,6 +12,8 @@ jobs:
   # ----------------------------------------
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,6 +24,7 @@ jobs:
           node-version: 20
 
       - name: Cache node_modules
+        id: cache
         uses: actions/cache@v3
         with:
           path: |
@@ -32,17 +35,26 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: List all packages
+        id: list-packages
+        run: |
+          PACKAGES=$(ls -d packages/*/ | xargs -n1 basename)
+          echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+
   # ----------------------------------------
-  # 2️⃣ Run tests for all packages dynamically
+  # 2️⃣ Run tests and upload coverage dynamically
   # ----------------------------------------
   test:
     runs-on: ubuntu-latest
     needs: setup
+    strategy:
+      matrix:
+        pkg: ${{ env.PACKAGES }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -50,38 +62,19 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Find all packages
-        id: packages
+      - name: Run tests for ${{ matrix.pkg }}
         run: |
-          echo "PACKAGES<<EOF" >> $GITHUB_OUTPUT
-          for dir in packages/*; do
-            if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
-              echo "${dir}" >> $GITHUB_OUTPUT
-            fi
-          done
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Running tests for package: ${{ matrix.pkg }}"
+          yarn workspace ${{ matrix.pkg }} test --coverage
 
-      - name: Run tests for all packages
-        run: |
-          for pkg in packages/*; do
-            if [ -f "$pkg/package.json" ]; then
-              echo "Running tests for $pkg"
-              yarn workspace $(basename $pkg) test --coverage || exit 1
-            fi
-          done
-
-      - name: Upload all coverage
-        run: |
-          for pkg in packages/*; do
-            if [ -d "$pkg/coverage" ]; then
-              name=$(basename $pkg)-coverage
-              echo "Uploading coverage artifact: $name"
-              gh actions upload-artifact --name $name --path $pkg/coverage
-            fi
-          done
+      - name: Upload coverage for ${{ matrix.pkg }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pkg }}-coverage
+          path: packages/${{ matrix.pkg }}/coverage
 
   # ----------------------------------------
-  # 3️⃣ SonarCloud Analysis (dynamic coverage)
+  # 3️⃣ SonarCloud Analysis
   # ----------------------------------------
   sonarcloud:
     runs-on: ubuntu-latest
@@ -97,14 +90,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Download all coverage artifacts
-        run: |
-          for pkg in packages/*; do
-            artifact_name=$(basename $pkg)-coverage
-            if gh actions download-artifact --name $artifact_name --path $pkg/coverage; then
-              echo "Downloaded $artifact_name"
-            fi
-          done
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: container-coverage
+          path: packages/container/coverage
+
+      - name: Download remote coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: remote-coverage
+          path: packages/remote/coverage
 
       - name: Run SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
@@ -114,6 +110,6 @@ jobs:
             -Dsonar.organization=rahulnikam2002
             -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
             -Dsonar.projectName=micro-frontend-module-federation
-            -Dsonar.sources=packages/*/src
-            -Dsonar.tests=packages/*/src/__tests__
-            -Dsonar.javascript.lcov.reportPaths=packages/*/coverage/lcov.info
+            -Dsonar.sources=packages/container/src,packages/remote/src
+            -Dsonar.tests=packages/container/src/__tests__,packages/remote/src/__tests__
+            -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info
