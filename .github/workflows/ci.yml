@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ----------------------------------------
-  # 1️⃣ Install dependencies
+  # 1️⃣ Setup & install dependencies
   # ----------------------------------------
   setup:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
   # ----------------------------------------
-  # 2️⃣ Run tests (container)
+  # 2️⃣ Run tests for container
   # ----------------------------------------
   test-container:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
           path: packages/container/coverage
 
   # ----------------------------------------
-  # 3️⃣ Run tests (remote)
+  # 3️⃣ Run tests for remote
   # ----------------------------------------
   test-remote:
     runs-on: ubuntu-latest
@@ -107,13 +107,13 @@ jobs:
           node-version: 20
 
       - name: Download container coverage
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: container-coverage
           path: packages/container/coverage
 
       - name: Download remote coverage
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: remote-coverage
           path: packages/remote/coverage
@@ -128,6 +128,6 @@ jobs:
           sources: packages/container/src,packages/remote/src
           tests: packages/container/src/__tests__,packages/remote/src/__tests__
           coverage: packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info
-          pullRequestKey: ${{ github.event.pull_request.number }}
-          pullRequestBranch: ${{ github.head_ref }}
-          pullRequestBase: ${{ github.base_ref }}
+          pullRequestKey: ${{ github.event.pull_request.number || '' }}
+          pullRequestBranch: ${{ github.head_ref || '' }}
+          pullRequestBase: ${{ github.base_ref || '' }}
