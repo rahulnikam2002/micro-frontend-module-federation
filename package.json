@@ -5,7 +5,9 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "lerna run test --stream"
+    "test": "lerna run test --stream",
+    "test:coverage": "npx lerna run test --stream -- --coverage",
+    "merge-coverage": "node scripts/merge-lcov.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",

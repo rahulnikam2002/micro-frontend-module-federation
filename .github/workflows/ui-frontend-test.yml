@@ -26,15 +26,21 @@ jobs:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-      # Run tests (across all packages via Lerna)
-      - name: Run Tests
-        run: yarn test --coverage
+      # Run tests (across all packages via Lerna) using the workspace script which forwards --coverage
+      - name: Run tests with coverage
+        run: yarn test:coverage
 
-      # Upload coverage to GitHub (optional but useful)
-      - name: Upload Coverage Report
+      # Merge per-package lcov.info files into a single coverage/lcov.info
+      - name: Merge coverage reports
+        run: |
+          echo "Installing lcov-result-merger"
+          npm --no-save install -g lcov-result-merger || npm i -g lcov-result-merger
+          mkdir -p coverage || true
+          # Merge any found lcov.info files from packages into one file. If none found, create an empty file.
+          lcov-result-merger "packages/*/coverage/lcov.info" > coverage/lcov.info || true
+
+      - name: Upload merged coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: |
-            packages/**/coverage
-            coverage
+          path: coverage/lcov.info
