@@ -16,7 +16,7 @@ jobs:
       cache-key: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -57,7 +57,7 @@ jobs:
         run: yarn workspace container test --coverage
 
       - name: Upload container coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: container-coverage
           path: packages/container/coverage
@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -84,7 +84,7 @@ jobs:
         run: yarn workspace remote test --coverage
 
       - name: Upload remote coverage
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v3
         with:
           name: remote-coverage
           path: packages/remote/coverage
@@ -102,11 +102,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Download coverage artifacts
+      - name: Download container coverage
         uses: actions/download-artifact@v3
         with:
           name: container-coverage
