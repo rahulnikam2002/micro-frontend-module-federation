@@ -1,0 +1,40 @@
+name: CI - UI frontend Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Setup Node (pick the version you use locally, e.g. 18.x or 20.x)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      # Run tests (across all packages via Lerna)
+      - name: Run Tests
+        run: yarn test --coverage
+
+      # Upload coverage to GitHub (optional but useful)
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            packages/**/coverage
+            coverage
