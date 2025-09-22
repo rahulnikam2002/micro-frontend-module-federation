@@ -1,5 +1,6 @@
+import React from "react";
 import { SignInButton } from "./SigninButton/SigninButton";
-import './Header.css';
+import "./Header.css";
 
 export const Header = () => {
   return (
@@ -8,7 +9,7 @@ export const Header = () => {
         {/* Logo Section */}
         <div className="navbar-brand">
           <div className="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" className="logo-icon">
+            <svg role="img" data-testid="logo-svg" width="32" height="32" viewBox="0 0 32 32" className="logo-icon">
               <circle cx="16" cy="16" r="16" fill="url(#gradient)" />
               <path d="M12 10h8v2h-8v-2zm0 4h8v2h-8v-2zm0 4h6v2h-6v-2z" fill="white" />
               <defs>
@@ -27,7 +28,7 @@ export const Header = () => {
           <div className="nav-item dropdown">
             <a href="#" className="nav-link">
               Products
-              <svg className="dropdown-icon" width="16" height="16" viewBox="0 0 16 16">
+              <svg data-testid="logo-svg" className="dropdown-icon" width="16" height="16" viewBox="0 0 16 16">
                 <path d="M4.5 6L8 9.5L11.5 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
@@ -45,7 +46,7 @@ export const Header = () => {
           <div className="nav-item dropdown">
             <a href="#" className="nav-link">
               Resources
-              <svg className="dropdown-icon" width="16" height="16" viewBox="0 0 16 16">
+              <svg data-testid="logo-svg" className="dropdown-icon" width="16" height="16" viewBox="0 0 16 16">
                 <path d="M4.5 6L8 9.5L11.5 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
@@ -90,5 +91,4 @@ export const Header = () => {
   );
 };
 
-// Default export for Module Federation / dynamic imports
 export default Header;
