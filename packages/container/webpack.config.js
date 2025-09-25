@@ -55,6 +55,7 @@ module.exports = (env, argv) => {
         name: "container",
         remotes: {
           remote: "remote@http://localhost:3001/remoteEntry.js",
+          footer: "footer@http://localhost:3002/remoteEntry.js",
         },
         shared: {
           ...deps,
