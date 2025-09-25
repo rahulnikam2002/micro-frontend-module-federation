@@ -6,20 +6,31 @@ on:
 jobs:
   sonar:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - uses: actions/download-artifact@v4
+
+      - name: Download container coverage
+        uses: actions/download-artifact@v4
         with:
           name: container-coverage
           path: packages/container/coverage
-      - uses: actions/download-artifact@v4
+
+      - name: Download remote coverage
+        uses: actions/download-artifact@v4
         with:
           name: remote-coverage
           path: packages/remote/coverage
-      - uses: sonarsource/sonarcloud-github-action@v2
+
+      - name: Run SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
         with:
           args: >
             -Dsonar.organization=rahulnikam2002
