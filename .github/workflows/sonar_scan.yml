@@ -2,6 +2,10 @@ name: SonarCloud
 
 on:
   workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        description: "SonarCloud token"
+        required: true
 
 jobs:
   sonar:
@@ -9,28 +13,21 @@ jobs:
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Download container coverage
         uses: actions/download-artifact@v4
         with:
           name: container-coverage
           path: packages/container/coverage
-
       - name: Download remote coverage
         uses: actions/download-artifact@v4
         with:
           name: remote-coverage
           path: packages/remote/coverage
-
-      - name: Run SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v2
+      - uses: sonarsource/sonarcloud-github-action@v2
         with:
           args: >
             -Dsonar.organization=rahulnikam2002
