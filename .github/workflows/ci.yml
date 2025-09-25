@@ -17,11 +17,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # required so lerna can see git history & tags
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: https://registry.npmjs.org/
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -31,6 +34,18 @@ jobs:
         run: |
           PACKAGES=$(ls -d packages/*/ | xargs -n1 basename | jq -R -s -c 'split("\n")[:-1]')
           echo "packages-json=$PACKAGES" >> $GITHUB_OUTPUT
+
+      # ----------------------------------------
+      # 1.5️⃣ Version bump right after setup
+      # ----------------------------------------
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump versions with Lerna
+        if: github.ref == 'refs/heads/master'   # only on master branch
+        run: npx lerna version --conventional-commits --yes
 
   # ----------------------------------------
   # 2️⃣ Run tests and upload coverage dynamically
