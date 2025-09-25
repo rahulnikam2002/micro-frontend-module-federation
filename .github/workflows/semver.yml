@@ -10,8 +10,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0                  # full history, needed for lerna
-          ref: ${{ github.head_ref || github.ref_name }}  # ensures checkout to branch, not detached SHA
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,8 +23,14 @@ jobs:
 
       - name: Determine version bump
         id: semver
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
-          echo "PR title: $TITLE"
-          if [[ "$TITLE" == *"MAJOR"* ]]; then
-            echo "bump=major" >>
+          echo "PR title: $PR_TITLE"
+          bump="patch"
+          if [[ "$PR_TITLE" == MAJOR* ]]; then bump="major"; fi
+          if [[ "$PR_TITLE" == MINOR* ]]; then bump="minor"; fi
+          echo "bump=$bump" >> $GITHUB_OUTPUT
+
+      - name: Run Lerna Version
+        run: npx lerna version ${{ steps.semver.outputs.bump }} --yes --no-push
