@@ -7,18 +7,24 @@ jobs:
   semver:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0                  # full history, needed for lerna
+          ref: ${{ github.head_ref || github.ref_name }}  # ensures checkout to branch, not detached SHA
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Determine version bump
         id: semver
         run: |
           TITLE="${{ github.event.pull_request.title }}"
+          echo "PR title: $TITLE"
           if [[ "$TITLE" == *"MAJOR"* ]]; then
-            echo "bump=major" >> $GITHUB_OUTPUT
-          elif [[ "$TITLE" == *"MINOR"* ]]; then
-            echo "bump=minor" >> $GITHUB_OUTPUT
-          else
-            echo "bump=patch" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Run Lerna Version
-        run: npx lerna version ${{ steps.semver.outputs.bump }} --yes --no-push
+            echo "bump=major" >>
