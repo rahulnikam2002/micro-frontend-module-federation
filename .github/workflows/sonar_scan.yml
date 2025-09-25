@@ -1,0 +1,30 @@
+name: SonarCloud
+
+on:
+  workflow_call:
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@v4
+        with:
+          name: container-coverage
+          path: packages/container/coverage
+      - uses: actions/download-artifact@v4
+        with:
+          name: remote-coverage
+          path: packages/remote/coverage
+      - uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.organization=rahulnikam2002
+            -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
+            -Dsonar.projectName=micro-frontend-module-federation
+            -Dsonar.sources=packages/container/src,packages/remote/src
+            -Dsonar.tests=packages/container/src/__tests__,packages/remote/src/__tests__
+            -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info

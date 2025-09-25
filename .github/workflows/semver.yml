@@ -1,0 +1,24 @@
+name: SemVer
+
+on:
+  workflow_call:
+
+jobs:
+  semver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine version bump
+        id: semver
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ "$TITLE" == *"MAJOR"* ]]; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+          elif [[ "$TITLE" == *"MINOR"* ]]; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+          else
+            echo "bump=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Lerna Version
+        run: npx lerna version ${{ steps.semver.outputs.bump }} --yes --no-push
