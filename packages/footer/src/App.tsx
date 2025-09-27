@@ -1,10 +1,11 @@
 import React from 'react';
 import './App.css';
+import Footer from './Components/footer';
 
 function App() {
   return (
     <div className="App">
-      <h1>Upcoming micro frontend - Footer</h1>
+      <Footer />
     </div>
   );
 }
