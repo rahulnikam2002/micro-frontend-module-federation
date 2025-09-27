@@ -40,7 +40,7 @@ jobs:
         run: aws s3 sync packages/container/dist s3://my-mfe-container-rahul --delete
 
       - name: Deploy Header to S3
-        run: aws s3 sync packages/header/dist s3://my-mfe-header-rahul --delete
+        run: aws s3 sync packages/remote/dist s3://my-mfe-header-rahul --delete
 
       - name: Deploy Footer to S3
         run: aws s3 sync packages/footer/dist s3://my-mfe-footer-rahul --delete
