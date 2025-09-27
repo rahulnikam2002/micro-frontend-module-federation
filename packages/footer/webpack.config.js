@@ -7,7 +7,7 @@ module.exports = {
   entry: "./src/index.ts", // your main entry
   mode: "development",
   devServer: {
-    port: 3001,
+    port: 3002,
     open: true,
     hot: true,
     historyApiFallback: true,
@@ -21,7 +21,7 @@ module.exports = {
       {
         test: /\.(ts|tsx|js|jsx)$/,
         use: "ts-loader",
-        exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests
+        exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests FOR AWS
       },
       // CSS Modules
       {
@@ -46,10 +46,10 @@ module.exports = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: "remote",
+      name: "footer",
       filename: "remoteEntry.js",
       exposes: {
-        "./Header": "./src/components/Header",
+        "./Footer": "./src/bootstrap",
       },
       shared: {
         ...deps,

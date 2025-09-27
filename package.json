@@ -7,7 +7,11 @@
   "scripts": {
     "test": "lerna run test --stream",
     "test:coverage": "npx lerna run test --stream -- --coverage",
-    "merge-coverage": "node scripts/merge-lcov.js"
+    "merge-coverage": "node scripts/merge-lcov.js",
+    "start": "npx lerna run start --parallel",
+    "build": "npx lerna run build",
+    "clean": "npx lerna run clean",
+    "sonar": "sonarqube-scanner"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",

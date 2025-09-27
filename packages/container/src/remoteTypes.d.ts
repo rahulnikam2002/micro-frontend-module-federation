@@ -5,3 +5,9 @@ declare module "remote/Header" {
 
 	export default Header;
 }
+
+declare module "footer/Footer" {
+	const Header: React.ComponentType;
+
+	export default Header;
+}
