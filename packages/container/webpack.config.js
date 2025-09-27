@@ -23,7 +23,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(js|jsx|tsx|ts)$/,
           loader: "ts-loader",
-          exclude: /node_modules/,
+          exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests
         },
         // CSS Modules
         {
