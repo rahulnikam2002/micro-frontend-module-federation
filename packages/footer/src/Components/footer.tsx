@@ -9,7 +9,7 @@ const Footer = () => {
                 <div className="footer-brand">
                     <div className="logo">
                         <span className="logo-icon">🔷</span>
-                        <span className="logo-text">Micro Frontend</span>
+                        <span className="logo-text">Micro Frontend by Rahul Nikam</span>
                     </div>
                     <p className="brand-description">
                         Hassle-free blogging platform that developers and teams love.
@@ -56,7 +56,7 @@ const Footer = () => {
                 <div className="footer-column">
                     <h3 className="column-title">Company</h3>
                     <ul className="column-links">
-                        <li><a href="#">About Hashnode</a></li>
+                        <li><a href="#">About Codearchiticture</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Logos and media</a></li>
                         <li><a href="#">Changelog</a></li>
