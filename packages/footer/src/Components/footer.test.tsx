@@ -11,7 +11,7 @@ describe("Footer Component", () => {
 
     // ---------- Brand Section ----------
     test("renders logo and brand text", () => {
-        expect(screen.getByText("Micro Frontend")).toBeInTheDocument();
+        expect(screen.getByText("Micro Frontend by Rahul Nikam")).toBeInTheDocument();
         expect(screen.getByText("🔷")).toBeInTheDocument();
     });
 
@@ -60,7 +60,7 @@ describe("Footer Component", () => {
     test("renders Company column with links", () => {
         expect(screen.getByText("Company")).toBeInTheDocument();
         [
-            "About Hashnode",
+            "About Codearchiticture",
             "Careers",
             "Logos and media",
             "Changelog",
