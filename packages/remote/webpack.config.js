@@ -25,7 +25,7 @@ module.exports = {
       },
       // CSS Modules
       {
-        test: /\.module\.css$/i,
+        test: /\.module\.css$/,
         use: [
           "style-loader",
           {
@@ -38,8 +38,8 @@ module.exports = {
       },
       // Global CSS
       {
-        test: /\.css$/i,
-        exclude: /\.module\.css$/i,
+        test: /\.css$/,
+        exclude: /\.module\.css$/,
         use: ["style-loader", "css-loader"],
       },
     ],

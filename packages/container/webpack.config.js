@@ -54,8 +54,10 @@ module.exports = (env, argv) => {
       new ModuleFederationPlugin({
         name: "container",
         remotes: {
-          remote: "remote@http://my-mfe-header-rahul.s3-website.ap-south-1.amazonaws.com/remoteEntry.js",
-          footer: "footer@http://my-mfe-footer-rahul.s3-website.ap-south-1.amazonaws.com/remoteEntry.js",
+          // remote: "remote@http://my-mfe-header-rahul.s3-website.ap-south-1.amazonaws.com/remoteEntry.js",
+          // footer: "footer@http://my-mfe-footer-rahul.s3-website.ap-south-1.amazonaws.com/remoteEntry.js",
+          remote: "remote@http://localhost:3001/remoteEntry.js",
+          footer: "footer@http://localhost:3002/remoteEntry.js",
         },
         shared: {
           ...deps,
