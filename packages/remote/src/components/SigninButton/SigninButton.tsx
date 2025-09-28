@@ -1,4 +1,4 @@
-import * as styles from './SigninButton.module.css';
+import styles from './SigninButton.module.css';
 
 export const SignInButton = () => {
     console.log("the styles are", styles);
