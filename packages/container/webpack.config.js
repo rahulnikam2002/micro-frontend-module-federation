@@ -23,7 +23,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(js|jsx|tsx|ts)$/,
           loader: "ts-loader",
-          exclude: /node_modules/,
+          exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests
         },
         // CSS Modules
         {
@@ -33,6 +33,9 @@ module.exports = (env, argv) => {
             {
               loader: "css-loader",
               options: {
+                // Ensure CommonJS-style export to match imports like:
+                // import styles from './SigninButton.module.css'
+                esModule: false,
                 modules: true,
               },
             },
@@ -54,16 +57,15 @@ module.exports = (env, argv) => {
       new ModuleFederationPlugin({
         name: "container",
         remotes: {
-          remote: "remote@http://localhost:3001/remoteEntry.js",
+          remote: "remote@https://my-mfe-header-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js",
+          footer: "footer@https://my-mfe-footer-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js",
+          // remote: "remote@http://localhost:3001/remoteEntry.js",
+          // footer: "footer@http://localhost:3002/remoteEntry.js",
         },
         shared: {
           ...deps,
-          react: { singleton: true, eager: true, requiredVersion: deps.react },
-          "react-dom": {
-            singleton: true,
-            eager: true,
-            requiredVersion: deps["react-dom"],
-          },
+          react: { singleton: true, requiredVersion: deps.react },
+          "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
         },
       }),
       new HtmlWebpackPlugin({

@@ -7,7 +7,7 @@ module.exports = {
   entry: "./src/index.ts", // your main entry
   mode: "development",
   devServer: {
-    port: 3001,
+    port: 3002,
     open: true,
     hot: true,
     historyApiFallback: true,
@@ -21,20 +21,16 @@ module.exports = {
       {
         test: /\.(ts|tsx|js|jsx)$/,
         use: "ts-loader",
-        exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests
+        exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests FOR AWS
       },
       // CSS Modules
       {
-        test: /\.module\.css$/,
+        test: /\.module\.css$/i,
         use: [
           "style-loader",
           {
             loader: "css-loader",
             options: {
-              // Ensure css-loader returns a CommonJS-style export for compatibility
-              // with how the project imports CSS modules (import styles from '...').
-              // css-loader v3+ defaults to ES modules which can cause the imported
-              // value to be { default: { ... } } and make `styles.button` undefined.
               esModule: false,
               modules: true,
             },
@@ -43,22 +39,19 @@ module.exports = {
       },
       // Global CSS
       {
-        test: /\.css$/,
-        exclude: /\.module\.css$/,
+        test: /\.css$/i,
+        exclude: /\.module\.css$/i,
         use: ["style-loader", "css-loader"],
       },
     ],
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: "remote",
+      name: "footer",
       filename: "remoteEntry.js",
       exposes: {
-        "./Header": "./src/components/Header",
+        "./Footer": "./src/bootstrap",
       },
-      // Keep React and react-dom as singletons but avoid eager loading.
-      // Eager:true can cause duplicate React copies in federated builds and
-      // lead to runtime errors like the scheduler trying to access internals.
       shared: {
         ...deps,
         react: { singleton: true, requiredVersion: deps.react },

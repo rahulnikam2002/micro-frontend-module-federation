@@ -1,0 +1,58 @@
+name: SonarCloud
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        description: "SonarCloud token"
+        required: true
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download container coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: container-coverage
+          path: packages/container/coverage
+
+      - name: Download remote coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: remote-coverage
+          path: packages/remote/coverage
+
+      - name: Download footer coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: footer-coverage
+          path: packages/footer/coverage
+
+      - uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.organization=rahulnikam2002
+            -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
+            -Dsonar.projectName=micro-frontend-module-federation
+            -Dsonar.sources=packages/container/src,packages/remote/src,packages/footer/src
+            -Dsonar.tests=packages/container/src,packages/remote/src,packages/footer/src
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx
+            -Dsonar.exclusions=**/*.d.ts,**/jest.config.js,**/jest.config.ts,**/webpack.config.js,**/webpack.config.ts,**/__mocks__/**,**/node_modules/**
+            -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info,packages/footer/coverage/lcov.info
+
+      - name: Check SonarCloud Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          pollingTimeoutSec: 600
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
