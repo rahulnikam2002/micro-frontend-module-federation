@@ -1,0 +1,87 @@
+name: SonarCloud
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        description: "SonarCloud token"
+        required: true
+    inputs:
+      github_token:
+        description: "GitHub token to update PR status"
+        required: true
+        type: string
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      # 1️⃣ Checkout repository
+      - uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️⃣ Download coverage artifacts
+      - name: Download container coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: container-coverage
+          path: packages/container/coverage
+        continue-on-error: true
+
+      - name: Download remote coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: remote-coverage
+          path: packages/remote/coverage
+        continue-on-error: true
+
+      - name: Download footer coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: footer-coverage
+          path: packages/footer/coverage
+        continue-on-error: true
+
+      # 🔍 Debug: List downloaded coverage files
+      - name: Debug - List coverage files
+        run: |
+          echo "=== Coverage files structure ==="
+          find packages -name "*.info" -o -name "coverage" -type d 2>/dev/null || echo "No coverage files found"
+          echo "=== Container coverage ==="
+          ls -la packages/container/coverage/ 2>/dev/null || echo "No container coverage"
+          echo "=== Remote coverage ==="
+          ls -la packages/remote/coverage/ 2>/dev/null || echo "No remote coverage"
+          echo "=== Footer coverage ==="
+          ls -la packages/footer/coverage/ 2>/dev/null || echo "No footer coverage"
+
+      # 4️⃣ Run SonarCloud scan
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ inputs.github_token }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=rahulnikam2002
+            -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
+            -Dsonar.projectName=micro-frontend-module-federation
+            -Dsonar.sources=packages/container/src,packages/remote/src,packages/footer/src,packages/footer/tests
+            -Dsonar.tests=packages/container/src,packages/remote/src,packages/footer/src,packages/footer/tests
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx
+            -Dsonar.exclusions=**/*.d.ts,**/jest.config.js,**/jest.config.ts,**/webpack.config.js,**/webpack.config.ts,**/__mocks__/**,**/node_modules/**,**/dist/**
+            -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info,packages/footer/coverage/lcov.info
+
+      # 5️⃣ Check SonarCloud Quality Gate
+      - name: Check SonarCloud Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          pollingTimeoutSec: 600
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

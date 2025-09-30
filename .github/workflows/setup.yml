@@ -1,0 +1,25 @@
+name: Setup
+
+on:
+  workflow_call:  # <-- allows other workflows to call this
+    outputs:
+      packages-json:
+        description: "List of packages"
+        value: ${{ jobs.setup.outputs.packages-json }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      packages-json: ${{ steps.list-packages.outputs.packages-json }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: yarn install --frozen-lockfile
+
+      - id: list-packages
+        run: |
+          PACKAGES=$(ls -d packages/*/ | xargs -n1 basename | jq -R -s -c 'split("\n")[:-1]')
+          echo "packages-json=$PACKAGES" >> $GITHUB_OUTPUT

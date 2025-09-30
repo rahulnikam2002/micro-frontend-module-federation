@@ -1,5 +1,6 @@
-import './SigninButton.css';
+import styles from './SigninButton.module.css';
 
 export const SignInButton = () => {
-    return <button className="button">Sign In</button>;
+    console.log("the styles are", styles);
+    return <button className={styles.button}>Sign In</button>;
 }
