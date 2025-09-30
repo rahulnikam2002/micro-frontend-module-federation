@@ -31,6 +31,7 @@ module.exports = {
           {
             loader: "css-loader",
             options: {
+              esModule: false,
               modules: true,
             },
           },
@@ -53,8 +54,8 @@ module.exports = {
       },
       shared: {
         ...deps,
-        react: { singleton: true, eager: true, requiredVersion: deps.react },
-        "react-dom": { singleton: true, eager: true, requiredVersion: deps["react-dom"] },
+        react: { singleton: true, requiredVersion: deps.react },
+        "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
       },
     }),
     new HtmlWebpackPlugin({

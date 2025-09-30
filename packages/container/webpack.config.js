@@ -33,6 +33,9 @@ module.exports = (env, argv) => {
             {
               loader: "css-loader",
               options: {
+                // Ensure CommonJS-style export to match imports like:
+                // import styles from './SigninButton.module.css'
+                esModule: false,
                 modules: true,
               },
             },
@@ -61,12 +64,8 @@ module.exports = (env, argv) => {
         },
         shared: {
           ...deps,
-          react: { singleton: true, eager: true, requiredVersion: deps.react },
-          "react-dom": {
-            singleton: true,
-            eager: true,
-            requiredVersion: deps["react-dom"],
-          },
+          react: { singleton: true, requiredVersion: deps.react },
+          "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
         },
       }),
       new HtmlWebpackPlugin({

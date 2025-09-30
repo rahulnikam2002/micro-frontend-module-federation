@@ -31,6 +31,11 @@ module.exports = {
           {
             loader: "css-loader",
             options: {
+              // Ensure css-loader returns a CommonJS-style export for compatibility
+              // with how the project imports CSS modules (import styles from '...').
+              // css-loader v3+ defaults to ES modules which can cause the imported
+              // value to be { default: { ... } } and make `styles.button` undefined.
+              esModule: false,
               modules: true,
             },
           },
@@ -51,10 +56,13 @@ module.exports = {
       exposes: {
         "./Header": "./src/components/Header",
       },
+      // Keep React and react-dom as singletons but avoid eager loading.
+      // Eager:true can cause duplicate React copies in federated builds and
+      // lead to runtime errors like the scheduler trying to access internals.
       shared: {
         ...deps,
-        react: { singleton: true, eager: true, requiredVersion: deps.react },
-        "react-dom": { singleton: true, eager: true, requiredVersion: deps["react-dom"] },
+        react: { singleton: true, requiredVersion: deps.react },
+        "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
       },
     }),
     new HtmlWebpackPlugin({
