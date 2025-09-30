@@ -14,12 +14,15 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
+      # 1️⃣ Checkout the repository
       - uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3️⃣ Download coverage artifacts
       - name: Download container coverage
         uses: actions/download-artifact@v4
         with:
@@ -38,7 +41,9 @@ jobs:
           name: footer-coverage
           path: packages/footer/coverage
 
-      - uses: sonarsource/sonarcloud-github-action@v2
+      # 4️⃣ Run SonarCloud scan
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
         with:
           args: >
             -Dsonar.organization=rahulnikam2002
@@ -50,6 +55,7 @@ jobs:
             -Dsonar.exclusions=**/*.d.ts,**/jest.config.js,**/jest.config.ts,**/webpack.config.js,**/webpack.config.ts,**/__mocks__/**,**/node_modules/**
             -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info,packages/footer/coverage/lcov.info
 
+      # 5️⃣ Check SonarCloud Quality Gate
       - name: Check SonarCloud Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
         with:
