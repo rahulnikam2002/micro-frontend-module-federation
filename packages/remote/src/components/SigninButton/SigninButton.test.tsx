@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { SignInButton } from './SigninButton';
-import * as styles from './SigninButton.module.css';
+import styles from './SigninButton.module.css';
 
 describe('SignInButton', () => {
     test('renders a button with correct text', () => {
