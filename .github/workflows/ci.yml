@@ -23,6 +23,8 @@ jobs:
   sonarcloud:
     needs: test
     uses: ./.github/workflows/sonar_scan.yml
+    with:
+      github_token: ${{ github.token }}
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 

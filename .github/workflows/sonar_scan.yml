@@ -6,6 +6,11 @@ on:
       SONAR_TOKEN:
         description: "SonarCloud token"
         required: true
+    inputs:
+      github_token:
+        description: "GitHub token to update PR status"
+        required: true
+        type: string
 
 jobs:
   sonar:
@@ -14,7 +19,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
-      # 1️⃣ Checkout the repository
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
       # 2️⃣ Setup Node.js
@@ -44,6 +49,8 @@ jobs:
       # 4️⃣ Run SonarCloud scan
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ inputs.github_token }}
         with:
           args: >
             -Dsonar.organization=rahulnikam2002
