@@ -1,173 +1,144 @@
-# micro-frontend-module-federation — Test environment setup
+# micro-frontend-module-federation — Teaching & setup guide
 
-This README explains how to fully set up the test environment for this monorepo and how to run the package test suites successfully on Windows (PowerShell / `pwsh`). It also documents common issues you may encounter and how the repository is configured to work with Jest, Babel, and React testing libraries.
+This README is written to help you (and your viewers) set up and run this microfrontend monorepo locally, run tests, collect coverage, and understand the important configuration choices made in the project.
 
-## Quick start (recommended)
+If you'd like a single entry that links shorter deep-dive docs for recording, see `documentations/00-index.md` which links topic-specific files under `documentations/`.
 
-1. Open PowerShell (`pwsh`) in the repo root:
+## What you'll learn from this repo
+
+- How a monorepo is organized with Lerna + workspaces.
+- How to implement microfrontends using Webpack Module Federation.
+- How to configure Webpack for TypeScript, CSS Modules, and Module Federation.
+- How testing (Jest + Testing Library) and coverage are set up per-package.
+- How CI uploads and uses coverage with SonarCloud.
+
+## Prerequisites
+
+- Node.js (>= 18 recommended; CI uses Node 20)
+- Yarn (recommended) or a modern npm that supports workspaces
+- Git
+
+Verify your environment (PowerShell):
 
 ```pwsh
-cd "C:\Users\HP\Desktop\New folder (2)\bear-minimun"
+node -v
+yarn -v
+git --version
 ```
 
-2. Install dependencies at the workspace root (this will install devDependencies to root yarn workspace):
+## Quick start — run the project locally
+
+1. Clone the repo and open a PowerShell terminal in the repo root.
+
+```pwsh
+git clone <repo-url>
+cd <repo-root>
+```
+
+2. Install dependencies at the root (workspaces link packages automatically):
 
 ```pwsh
 yarn install
 ```
 
-3. Run all tests (this uses Lerna to run each package test script):
+3. Start the three apps in separate terminals for local development:
 
 ```pwsh
-yarn test
-```
+# Terminal A: container (port 3000)
+cd packages/container
+yarn start
 
-Or run tests for a single package (example: `remote`):
-
-```pwsh
+# Terminal B: remote (port 3001)
 cd packages/remote
-yarn test
+yarn start
+
+# Terminal C: footer (port 3002)
+cd packages/footer
+yarn start
 ```
 
-## Required devDependencies
+Open `http://localhost:3000` to view the container. If you want the container to use local remotes, edit `packages/container/webpack.config.js` and switch the `remotes` entries to the `http://localhost` URLs (the file contains commented local examples).
 
-The project needs these dev dependencies (normally in the root `package.json`) so Jest and Babel can transform and run tests that use JSX and TypeScript:
+## Scripts you will use often
 
-- `jest` and `babel-jest`
-- `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/dom`
-- `identity-obj-proxy` (for mocking CSS imports in Jest)
-- `@babel/preset-react`, `@babel/preset-env`, `@babel/preset-typescript`
-- (recommended) `@babel/core` to satisfy peer requirements of presets
-
-If any are missing you can add them to the workspace root with the `-W` flag so they are placed in the root `package.json`:
+From the repo root (these use Lerna to orchestrate across packages):
 
 ```pwsh
-yarn add -D -W @testing-library/dom identity-obj-proxy @babel/core @babel/preset-react babel-jest jest
+yarn start           # runs `start` in each package (dev servers)
+yarn build           # runs `build` in each package
+yarn test            # runs tests across packages (lerna run test --stream)
+yarn test:coverage   # runs tests with coverage across packages
+yarn merge-coverage  # repository has a merge script (node scripts/merge-lcov.js)
 ```
 
-Notes:
-- Some projects will also use `ts-jest` and TypeScript dev dependencies — keep those if present.
-
-## Babel configuration (important)
-
-- Make sure there is a root `babel.config.js` file (NOT `babel.congif.js`) so `babel-jest` can pick it up automatically. The file should include `@babel/preset-react` to transform JSX. Example (this repository contains this already):
-
-```js
-module.exports = {
-  presets: [
-    ["@babel/preset-env", { targets: { node: "current" } }],
-    ["@babel/preset-react", { runtime: "automatic" }],
-    "@babel/preset-typescript",
-  ],
-};
-```
-
-- If you run Jest inside a package and Babel cannot be found, add a package-level `babel.config.js` that re-exports the root config:
-
-```js
-// packages/remote/babel.config.js
-module.exports = require('../../babel.config.js');
-```
-
-## Jest configuration
-
-- Each package should have a `jest.config.js` file (this repo uses package-level config files). Important options to include:
-  - `transform: { '^.+\\.[jt]sx?$': 'babel-jest' }`
-  - `moduleNameMapper` to mock CSS and static assets, e.g.:
-
-```js
-moduleNameMapper: {
-  '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-  '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/__mocks__/fileMock.js',
-}
-```
-
-- Create `__mocks__/fileMock.js` in the package (or a central place referenced by `moduleNameMapper`) with:
-
-```js
-module.exports = 'test-file-stub';
-```
-
-- Ensure there are not multiple `jest.config.*` files in the same package (e.g., both `jest.config.ts` and `jest.config.js`) — Jest will error with *Multiple configurations found*. Remove or rename the unused config files; prefer `jest.config.js` for explicitness.
-
-## Handling CSS and static asset imports in tests
-
-- Tests that import CSS (e.g. `import './App.css'`) will fail unless you tell Jest how to handle those imports. Use `moduleNameMapper` (see above) and install `identity-obj-proxy`.
-
-## Testing components that use Module Federation / dynamic imports
-
-- During tests Module Federation remote modules (like `import('remote/Header')`) are not available. Options:
-  - Provide a manual mock at the package under `__mocks__/remote/Header.js` with a small React component for tests.
-  - Or mock the module in the test with `jest.mock('remote/Header', () => ... )`.
-
-Example manual mock:
-
-```js
-// packages/container/__mocks__/remote/Header.js
-const React = require('react');
-module.exports = function Header() {
-  return React.createElement('div', null, React.createElement('h1', null, 'Remote'));
-};
-```
-
-Alternatively, in a test file:
-
-```js
-jest.mock('remote/Header', () => ({ __esModule: true, default: () => <div><h1>Remote</h1></div> }));
-```
-
-## Tests added in this repo
-
-I added tests for the remote `Header` component at:
-
-- `packages/remote/src/__tests__/Header.test.tsx`
-
-This file contains tests that:
-- Render and assert the header text
-- Verify heading semantics (`role='heading'`, level 1)
-- Verify default export works
-- Snapshot test
-
-## Running a single test file or watch mode
-
-From repo root (PowerShell):
+From a package folder (e.g. `packages/remote`):
 
 ```pwsh
-# run only remote package tests
-cd packages/remote
-yarn test
-
-# run jest in watch mode for faster iteration
-yarn test --watch
+yarn start    # run dev server for that package
+yarn build    # build production bundle
+yarn test     # run tests for that package
 ```
 
-You can also run Jest directly with an explicit config if necessary:
+## Testing and coverage
+
+- Each package contains a `jest.config.js` that uses `babel-jest` and maps CSS to `identity-obj-proxy` for tests.
+- Coverage output (`lcov.info`) is written to `packages/<pkg>/coverage/`.
+- CI downloads coverage artifacts and passes the lcov paths to SonarCloud (see `.github/workflows/sonar_scan.yml`).
+
+To run tests with coverage locally:
 
 ```pwsh
-# use --config to tell jest which config to use
-yarn test -- --config packages/remote/jest.config.js
+yarn test:coverage
 ```
 
-## Common errors and fixes
+Then check `packages/<pkg>/coverage/lcov.info` or open the HTML report `packages/<pkg>/coverage/lcov-report/index.html`.
 
-- "Support for the experimental syntax 'jsx' isn't currently enabled": check `babel.config.js` exists at repo root and includes `@babel/preset-react`.
-- "Cannot find module '@testing-library/dom'": install `@testing-library/dom` (root devDependency): `yarn add -D -W @testing-library/dom`.
-- "Unexpected token '.'" on import of CSS: ensure `moduleNameMapper` and `identity-obj-proxy` are set up.
-- "Multiple configurations found": remove `.ts` or duplicate `jest.config.*` files so only one config per package is found by Jest.
+## Important configuration notes (short)
 
-## CI notes
+- Babel: root `babel.config.js` includes `@babel/preset-env`, `@babel/preset-react` (automatic runtime) and `@babel/preset-typescript`.
+- TypeScript: packages use `tsconfig.json` tuned for `jsx: 'react-jsx'` and `module: 'esnext'`.
+- CSS Modules: Webpack rules match `*.module.css` and use `css-loader` with `{ esModule: false, modules: true }` to preserve a CommonJS-style import shape (`styles.foo`).
+- Module Federation: remotes expose modules (e.g. `./Header`) and the container consumes them. React & react-dom are shared singletons.
 
-- In CI make sure you run `yarn install` at repo root, then `yarn test`.
-- Prefer a root-level cache for `node_modules` in your CI to speed up workspace installs.
+See `documentations/08-important-configs.md` for a concise reference of these flags and why they matter.
 
-## Files I changed / added while fixing tests
+## CI & SonarCloud
 
-- `babel.config.js` (root) — ensure presets include `@babel/preset-react`
-- `packages/*/babel.config.js` — package-level pointer files (optional)
-- `packages/*/jest.config.js` — per-package jest configs with `moduleNameMapper`
-- `packages/*/__mocks__/fileMock.js` — file mock for static assets
-- `packages/container/__mocks__/remote/Header.js` — manual mock for federated `remote/Header` used by container tests
-- `packages/remote/src/__tests__/Header.test.tsx` — new header tests
+- The callable workflow `.github/workflows/sonar_scan.yml` expects coverage artifacts and a `SONAR_TOKEN` secret. The workflow downloads coverage artifacts for `container`, `remote`, and `footer`, then runs the SonarCloud action with `sonar.javascript.lcov.reportPaths` set to the packages' lcov files.
+- If you want to reproduce CI locally, run package tests with `--coverage`, ensure `coverage/lcov.info` files exist and are accessible, and then call the Sonar action from CI with valid tokens.
+
+## Common issues & quick fixes
+
+- "Support for the experimental syntax 'jsx' isn't enabled": ensure `babel.config.js` is present at the repo root and includes `@babel/preset-react`.
+- Tests failing on CSS import: make sure `identity-obj-proxy` is installed and `jest.config.js` maps CSS to it.
+- Duplicate React runtime errors at runtime: check Module Federation `shared` configuration and ensure `react` / `react-dom` are singletons with compatible versions.
+- RemoteEntry 404 / CORS: confirm the remote dev server is running or that the production `remoteEntry.js` is uploaded to the expected URL; ensure CORS headers are configured if hosted.
+
+If you get an error, copy the top ~20 lines of the stack/console output and open the relevant doc in `documentations/` (the files contain debugging steps). Start with `documentations/00-index.md`.
+
+## Project structure (short)
+
+```
+packages/
+  container/   # host app (webpack.config.js contains remotes)
+  remote/      # exposes Header via Module Federation
+  footer/      # exposes Footer via Module Federation
+documentations/ # topic-specific markdowns (see 00-index.md)
+.github/workflows/sonar_scan.yml
+lerna.json
+package.json   # root scripts and workspace config
+babel.config.js
+```
+
+## Where to look for detailed teaching material
+
+Start with `documentations/00-index.md` — it links dedicated docs for each topic (Monorepo/Lerna, Microfrontends, Webpack, Module Federation, Tests, Coverage, GitHub Actions, Important configs, CSS modules migration).
+
+## Contributing & recording tips
+
+- If you change configuration while preparing a video, commit the change and include a clear commit message explaining why (this will help when you teach troubleshooting).
+- When demonstrating local Module Federation, start remote apps first, then the container so remoteEntry files are available.
+- For audience reproducibility, include the exact Node/Yarn versions you used in your video description.
 
 ## Need help?
-If anything still fails after following the steps above, paste the failing error output here (the first ~20 lines are usually enough) and I will diagnose the cause and provide a targeted fix.
+If anything still fails after following this README and the documents in `documentations/`, paste the failing error output (first ~20 lines) and I will diagnose the cause and provide a targeted fix.
