@@ -60,10 +60,10 @@ describe('App', () => {
       (n) => n.nodeType === Node.ELEMENT_NODE
     );
 
-  // Find indexes (use the actual nodes rendered inside .App)
-  const idxHeader = children.indexOf(header as Element);
-  const idxButton = children.indexOf(button as Element);
-  const idxFooter = children.indexOf(footer as Element);
+    // Find indexes (use the actual nodes rendered inside .App)
+    const idxHeader = children.indexOf(header as Element);
+    const idxButton = children.indexOf(button as Element);
+    const idxFooter = children.indexOf(footer as Element);
 
     // The header should come before the button, and button before footer
     expect(idxHeader).toBeGreaterThanOrEqual(0);
