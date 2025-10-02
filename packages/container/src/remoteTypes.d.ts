@@ -11,3 +11,8 @@ declare module "footer/Footer" {
 
 	export default Header;
 }
+
+declare module "footer/GlobalButton" {
+	const GlobalButton: React.ComponentType;
+	export default GlobalButton;
+}

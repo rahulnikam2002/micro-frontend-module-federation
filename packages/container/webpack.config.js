@@ -1,6 +1,8 @@
+const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const webpack = require("webpack"); // only add this if you don't have yet
 const { ModuleFederationPlugin } = webpack.container;
+const Dotenv = require("dotenv-webpack");
 const deps = require("./package.json").dependencies;
 
 const buildDate = new Date().toLocaleString();
@@ -8,6 +10,17 @@ const buildDate = new Date().toLocaleString();
 module.exports = (env, argv) => {
   const isProduction = argv.mode === "production";
   console.log({ isProduction });
+
+  // Load environment variables from .env.public file
+  require('dotenv').config({ path: path.resolve(__dirname, "../../.env.public") });
+
+  // Debug: Log the environment variables to ensure they're loaded
+  console.log('Environment variables:', {
+    REMOTE_HEADER_URL: process.env.REMOTE_HEADER_URL,
+    REMOTE_FOOTER_URL: process.env.REMOTE_FOOTER_URL,
+    REMOTE_GLOBALBUTTON_URL: process.env.REMOTE_GLOBALBUTTON_URL
+  });
+
   return {
     entry: "./src/index.ts",
     mode: process.env.NODE_ENV || "development",
@@ -23,7 +36,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(js|jsx|tsx|ts)$/,
           loader: "ts-loader",
-          exclude: [/node_modules/, /\.test\.(ts|tsx)$/], // <-- exclude tests
+          exclude: [/node_modules/, /\.test\.(ts|tsx)$/],
         },
         // CSS Modules
         {
@@ -32,12 +45,7 @@ module.exports = (env, argv) => {
             "style-loader",
             {
               loader: "css-loader",
-              options: {
-                // Ensure CommonJS-style export to match imports like:
-                // import styles from './SigninButton.module.css'
-                esModule: false,
-                modules: true,
-              },
+              options: { esModule: false, modules: true },
             },
           ],
         },
@@ -48,19 +56,23 @@ module.exports = (env, argv) => {
         },
       ],
     },
-
     plugins: [
-      new webpack.EnvironmentPlugin({ BUILD_DATE: buildDate }),
-      new webpack.DefinePlugin({
-        "process.env": JSON.stringify(process.env),
+      // Load all public env vars from .env.public
+      new Dotenv({
+        path: path.resolve(__dirname, "../../.env.public"),
+        safe: false,
       }),
+
+      // Only BUILD_DATE as a separate env variable
+      new webpack.EnvironmentPlugin({ BUILD_DATE: buildDate }),
+
+      // Module Federation config
       new ModuleFederationPlugin({
         name: "container",
         remotes: {
-          remote: "remote@https://my-mfe-header-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js",
-          footer: "footer@https://my-mfe-footer-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js",
-          // remote: "remote@http://localhost:3001/remoteEntry.js",
-          // footer: "footer@http://localhost:3002/remoteEntry.js",
+          remote: `remote@${process.env.REMOTE_HEADER_URL}`,
+          footer: `footer@${process.env.REMOTE_FOOTER_URL}`,
+          globalbutton: `globalbutton@${process.env.REMOTE_GLOBALBUTTON_URL}`,
         },
         shared: {
           ...deps,
@@ -68,6 +80,8 @@ module.exports = (env, argv) => {
           "react-dom": { singleton: true, requiredVersion: deps["react-dom"] },
         },
       }),
+
+      // HTML template
       new HtmlWebpackPlugin({
         template: "./public/index.html",
       }),

@@ -51,6 +51,7 @@ module.exports = {
       filename: "remoteEntry.js",
       exposes: {
         "./Footer": "./src/bootstrap",
+        './GlobalButton': './src/Components/Button/index'
       },
       shared: {
         ...deps,
