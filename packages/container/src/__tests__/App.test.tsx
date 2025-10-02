@@ -192,7 +192,6 @@ describe('App', () => {
     expect(appDiv).toHaveClass('App');
 
     // This ensures the JSX return statement and fallback props are covered
-    // even if the fallbacks load too quickly to be visible in tests
     expect(container.firstChild).toBeTruthy();
   });
 });
