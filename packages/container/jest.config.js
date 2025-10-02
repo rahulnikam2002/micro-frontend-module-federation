@@ -22,9 +22,20 @@ module.exports = {
     "src/**/*.{js,jsx,ts,tsx}",
     "!src/index.{js,ts,tsx}", // ignore entry file
     "!src/**/types.{ts,tsx}", // ignore type-only files
+    "!src/**/*.d.ts", // ignore type declaration files
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "html"],
+  
+  // Ensure 100% statement coverage for SonarCloud
+  coverageThreshold: {
+    global: {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100
+    }
+  },
 
   // 👇 Ensures lcov paths match Sonar sources (e.g. packages/container/src/…)
   rootDir: path.resolve(__dirname, "."),
