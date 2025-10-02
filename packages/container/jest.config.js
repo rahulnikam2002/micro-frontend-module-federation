@@ -26,7 +26,7 @@ module.exports = {
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "html"],
-  
+
   // Ensure 100% statement coverage for SonarCloud
   coverageThreshold: {
     global: {

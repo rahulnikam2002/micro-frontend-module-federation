@@ -33,7 +33,7 @@ describe('Module-level coverage', () => {
     // to ensure SonarCloud recognizes them as covered
     expect(App).toBeDefined();
     expect(typeof App).toBe('function');
-    
+
     // By importing and using App, all module-level const declarations
     // for Header, Footer, and GlobalButton are executed
     const { container } = render(<App />);
@@ -208,19 +208,19 @@ describe('App', () => {
   test('directly tests lazy component constants for coverage', async () => {
     // Import the App module to ensure const declarations are executed
     const AppModule = await import('../App');
-    
+
     // Verify the App export exists (covers export default App)
     expect(AppModule.default).toBeDefined();
     expect(typeof AppModule.default).toBe('function');
-    
+
     // Render to force execution of the lazy imports
     const { container } = render(<AppModule.default />);
-    
+
     // Wait for all lazy components to load (forces const execution)
     await screen.findByTestId('mock-header');
-    await screen.findByTestId('mock-footer'); 
+    await screen.findByTestId('mock-footer');
     await screen.findByTestId('mock-global-button');
-    
+
     // Verify the complete app structure
     expect(container.querySelector('.App')).toBeInTheDocument();
   });
@@ -228,16 +228,16 @@ describe('App', () => {
   test('validates all lazy import statements execute', () => {
     // This test ensures each React.lazy() line is executed for SonarCloud
     const { container } = render(<App />);
-    
+
     // Verify all 3 Suspense elements are created (one for each lazy import)
     const suspenseElements = container.querySelectorAll('.App > *');
     expect(suspenseElements).toHaveLength(3);
-    
+
     // Each Suspense wrapper corresponds to one lazy import line:
     // Line 3: const Header = React.lazy(() => import('remote/Header'));
     // Line 4: const Footer = React.lazy(() => import('footer/Footer')); 
     // Line 5: const GlobalButton = React.lazy(() => import('footer/GlobalButton'));
-    
+
     // Verify App structure exists (covers the function App() declaration)
     expect(container.querySelector('.App')).toBeInTheDocument();
   });
