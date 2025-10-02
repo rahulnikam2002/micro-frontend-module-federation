@@ -187,10 +187,10 @@ describe('App', () => {
     const appDiv = container.querySelector('.App');
     expect(appDiv).toBeInTheDocument();
     expect(appDiv?.children).toHaveLength(3); // 3 Suspense wrappers
-    
+
     // Verify the App component renders and has correct structure
     expect(appDiv).toHaveClass('App');
-    
+
     // This ensures the JSX return statement and fallback props are covered
     // even if the fallbacks load too quickly to be visible in tests
     expect(container.firstChild).toBeTruthy();
