@@ -14,6 +14,16 @@ jest.mock('footer/Footer', () => ({
   default: () => <div data-testid="mock-footer">Mock Footer</div>,
 }));
 
+// Mock GlobalButton used by App
+jest.mock(
+  'footer/GlobalButton',
+  () => ({
+    __esModule: true,
+    default: () => <button data-testid="mock-global-button">Mock Button</button>,
+  }),
+  { virtual: true }
+);
+
 import App from '../App'; // Import AFTER mocking
 
 describe('App', () => {
