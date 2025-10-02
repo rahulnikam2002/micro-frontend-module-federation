@@ -33,12 +33,15 @@ describe('App', () => {
     // Check Suspense fallback
     expect(screen.getByText(/loading header/i)).toBeInTheDocument();
     expect(screen.getByText(/loading footer/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading button/i)).toBeInTheDocument();
 
     // Wait for lazy-loaded components
     const header = await screen.findByTestId('mock-header');
     const footer = await screen.findByTestId('mock-footer');
+    const button = await screen.findByTestId('mock-global-button');
 
     expect(header).toBeInTheDocument();
     expect(footer).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
   });
 });
