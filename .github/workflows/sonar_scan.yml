@@ -72,8 +72,9 @@ jobs:
             -Dsonar.organization=rahulnikam2002
             -Dsonar.projectKey=rahulnikam2002_micro-frontend-module-federation
             -Dsonar.projectName=micro-frontend-module-federation
-            -Dsonar.sources=packages/container/src,packages/remote/src,packages/footer/src,packages/footer/tests
-            -Dsonar.tests=packages/container/src,packages/remote/src,packages/footer/src,packages/footer/tests
+            -Dsonar.sources=packages/container/src,packages/remote/src,packages/footer/src
+            -Dsonar.tests=packages
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx
             -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx
             -Dsonar.exclusions=**/*.d.ts,**/jest.config.js,**/jest.config.ts,**/webpack.config.js,**/webpack.config.ts,**/__mocks__/**,**/node_modules/**,**/dist/**
             -Dsonar.javascript.lcov.reportPaths=packages/container/coverage/lcov.info,packages/remote/coverage/lcov.info,packages/footer/coverage/lcov.info

@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`App renders components in the correct order and matches snapshot 1`] = `
+<div
+  class="App"
+>
+  <div
+    data-testid="mock-header"
+  >
+    Mock Header
+  </div>
+  <button
+    data-testid="mock-global-button"
+  >
+    Mock Button
+  </button>
+  <div
+    data-testid="mock-footer"
+  >
+    Mock Footer
+  </div>
+</div>
+`;

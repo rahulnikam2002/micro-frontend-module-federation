@@ -1,1 +1,4 @@
-@rahulnikam2002
+# Set code owners for the repository.
+# Use path patterns on the left and owners on the right.
+# Example: `* @org/team` will make the listed owners responsible for all files.
+* @rahulnikam2002

@@ -15,20 +15,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      # 4️⃣ Build all packages with production remote URLs
       - name: Build all packages
+        env:
+          NODE_ENV: production
+          REMOTE_HEADER_URL: https://my-mfe-header-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js
+          REMOTE_FOOTER_URL: https://my-mfe-footer-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js
+          REMOTE_GLOBALBUTTON_URL: https://my-mfe-footer-rahul.s3.ap-south-1.amazonaws.com/remoteEntry.js
         run: yarn build
 
+      # 5️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -36,11 +46,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # 6️⃣ Deploy Container to S3
       - name: Deploy Container to S3
         run: aws s3 sync packages/container/dist s3://my-mfe-container-rahul --delete
 
+      # 7️⃣ Deploy Header to S3
       - name: Deploy Header to S3
         run: aws s3 sync packages/remote/dist s3://my-mfe-header-rahul --delete
 
+      # 8️⃣ Deploy Footer to S3
       - name: Deploy Footer to S3
         run: aws s3 sync packages/footer/dist s3://my-mfe-footer-rahul --delete
+
+      # 9️⃣ (Optional) Invalidate CloudFront caches if needed
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation --distribution-id E33UJ2V8K98O98 \
+            --paths "/*"
