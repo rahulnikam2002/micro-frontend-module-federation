@@ -31,7 +31,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 }
 
 const GlobalButton: React.FC<ButtonProps> = ({
-    children,
+    children = 'Click Me',
     variant = 'primary',
     size = 'md',
     icon,
