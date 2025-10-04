@@ -1,11 +1,15 @@
 import React from 'react';
 import './footer.css';
+import ButtonExamples from './Button/ButtonExamples';
 
 const Footer = () => {
     return (
         <footer className="footer">
             <div className="footer-container">
                 {/* Brand Section */}
+                <>
+                    <ButtonExamples />
+                </>
                 <div className="footer-brand">
                     <div className="logo">
                         <span className="logo-icon">🔷</span>
