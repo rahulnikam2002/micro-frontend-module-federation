@@ -14,7 +14,7 @@ function App() {
 
       <React.Suspense fallback={<h1>Loading Button...</h1>}>
         <GlobalButton variant="secondary" onClick={() => alert('Button Clicked!')}>
-          Click Me!
+          Press Me!
         </GlobalButton>
       </React.Suspense>
 
