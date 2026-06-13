@@ -20,7 +20,7 @@ export const Header = () => {
               </defs>
             </svg>
           </div>
-          <span className="brand-text">Remote Component</span>
+          <span className="brand-text">Micro Frontend</span>
         </div>
 
         {/* Navigation Menu */}
