@@ -14,7 +14,7 @@ describe("Header Component", () => {
     });
 
     test("renders logo and brand text", () => {
-        expect(screen.getByText("Remote Component")).toBeInTheDocument();
+        expect(screen.getByText("Micro Frontend")).toBeInTheDocument();
         expect(screen.getByRole("img", { hidden: true })).toBeInTheDocument(); // SVG logo
     });
 
